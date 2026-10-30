@@ -1,0 +1,21 @@
+:root { --brand: #1f4e79; }
+html { font-size: 15px; }
+body { background: #f4f7fb; }
+.bg-primary-subtle-dark { background: var(--brand); }
+.card { border: 0; box-shadow: 0 2px 10px rgba(31, 78, 121, .08); }
+.table thead th { background: var(--brand); color: #fff; font-weight: 600; white-space: nowrap; }
+.qty-input { width: 90px; }
+.stat-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 1.3rem; }
+.login-wrap { max-width: 420px; }
+.sticky-summary { position: sticky; top: 1rem; }
+
+/* Invoice print view (Task 3.3): hide navigation and buttons, print on A4. */
+.invoice { background: #fff; max-width: 900px; margin: 0 auto; padding: 2.5rem; }
+@media print {
+    @page { size: A4; margin: 14mm; }
+    body { background: #fff; }
+    .no-print, .navbar, footer, .alert { display: none !important; }
+    main.container { max-width: 100%; padding: 0 !important; }
+    .invoice { box-shadow: none; padding: 0; }
+    .table thead th { background: #e9eef4 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
