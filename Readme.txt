@@ -8,7 +8,7 @@ GROUP MEMBERS
   523V0007 - Hà Văn Thành Đạt
 
 GITHUB REPOSITORY
-  <GitHub repository link>
+  https://github.com/claudeprogrammorpheus-png/LabAssignment-2
 
 VIDEO DEMO (optional)
   <video link>
