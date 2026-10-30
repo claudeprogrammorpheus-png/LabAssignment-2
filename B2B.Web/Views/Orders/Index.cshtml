@@ -1,0 +1,64 @@
+@model List<Order>
+@{
+    ViewData["Title"] = "My Orders";
+    string Badge(string s) => s switch
+    {
+        OrderStatuses.Pending => "bg-warning text-dark", OrderStatuses.Processing => "bg-info text-dark",
+        OrderStatuses.Shipped => "bg-primary", OrderStatuses.Delivered => "bg-success", _ => "bg-secondary",
+    };
+    var active = Model.Where(o => o.OrderStatus != OrderStatuses.Cancelled).ToList();
+}
+
+<h1 class="h3 fw-bold mb-3"><i class="bi bi-receipt me-2 text-primary"></i>My Orders</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-4"><div class="card p-3 d-flex flex-row align-items-center gap-3">
+        <div class="stat-icon bg-primary text-white"><i class="bi bi-bag"></i></div>
+        <div><div class="text-muted small">Orders</div><div class="fs-4 fw-bold">@Model.Count</div></div></div></div>
+    <div class="col-sm-4"><div class="card p-3 d-flex flex-row align-items-center gap-3">
+        <div class="stat-icon bg-warning text-dark"><i class="bi bi-hourglass-split"></i></div>
+        <div><div class="text-muted small">Open (pending / processing)</div><div class="fs-4 fw-bold">@Model.Count(o => o.OrderStatus is OrderStatuses.Pending or OrderStatuses.Processing)</div></div></div></div>
+    <div class="col-sm-4"><div class="card p-3 d-flex flex-row align-items-center gap-3">
+        <div class="stat-icon bg-success text-white"><i class="bi bi-cash-stack"></i></div>
+        <div><div class="text-muted small">Total purchased</div><div class="fs-4 fw-bold">@active.Sum(o => o.TotalAmount).ToString("N0") ₫</div></div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Order history</span>
+        <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All statuses</option>
+                @foreach (var s in OrderStatuses.All)
+                {
+                    <option value="@s" selected="@(ViewBag.Status == s)">@s</option>
+                }
+            </select>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Order #</th><th>Date</th><th class="text-center">Lines</th><th class="text-end">Total (VND)</th><th class="text-center">Status</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">No orders found.</td></tr>
+            }
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">#@o.OrderID</td>
+                    <td>@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-center">@o.OrderDetails.Count</td>
+                    <td class="text-end">@o.TotalAmount.ToString("N0")</td>
+                    <td class="text-center"><span class="badge @Badge(o.OrderStatus)">@o.OrderStatus</span></td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@o.OrderID"><i class="bi bi-eye"></i> View</a>
+                        <a class="btn btn-sm btn-primary" asp-action="Invoice" asp-route-id="@o.OrderID" target="_blank"><i class="bi bi-printer"></i> Invoice</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

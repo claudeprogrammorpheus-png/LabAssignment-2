@@ -1,0 +1,58 @@
+@model Order
+@{
+    ViewData["Title"] = $"Invoice #{Model.OrderID}";
+    var vat = Math.Round(Model.TotalAmount * 0.08m / 1.08m); // prices include 8% VAT
+}
+
+<div class="text-end mb-3 no-print">
+    <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print / Save as PDF</button>
+</div>
+
+<div class="invoice card">
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-box-seam-fill text-warning me-1"></i>B2B Wholesale Distributor</h2>
+            <div class="small text-muted">19 Nguyen Huu Tho, Tan Phong, District 7, HCMC · Tax code 0312345678 · (028) 3775 5000</div>
+        </div>
+        <div class="text-end">
+            <h3 class="fw-bold text-primary mb-0">INVOICE</h3>
+            <div>No. <b>INV-@Model.OrderDate.ToString("yyyyMM")-@Model.OrderID.ToString("D5")</b></div>
+            <div class="small">Date: @Model.OrderDate.ToString("dd/MM/yyyy")</div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-6">
+            <div class="text-muted small text-uppercase">Bill to</div>
+            <div class="fw-bold">@Model.Agent?.AgentName</div>
+            <div>@Model.Agent?.Address</div>
+            <div>Tel: @Model.Agent?.Phone</div>
+        </div>
+        <div class="col-6 text-end">
+            <div class="text-muted small text-uppercase">Order</div>
+            <div>Order #@Model.OrderID · @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+            <div>Status: <b>@Model.OrderStatus</b></div>
+        </div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead><tr><th>#</th><th>Description</th><th>Pack size</th><th class="text-end">Qty</th><th class="text-end">Unit price</th><th class="text-end">Amount</th></tr></thead>
+        <tbody>
+        @{ int n = 1; }
+        @foreach (var d in Model.OrderDetails)
+        {
+            <tr><td>@(n++)</td><td>@d.Item?.ItemName</td><td>@d.Item?.Size</td><td class="text-end">@d.Quantity</td>
+                <td class="text-end">@d.UnitAmount.ToString("N0")</td><td class="text-end">@d.LineTotal.ToString("N0")</td></tr>
+        }
+        </tbody>
+        <tfoot>
+            <tr><td colspan="5" class="text-end">of which VAT (8%)</td><td class="text-end">@vat.ToString("N0")</td></tr>
+            <tr><th colspan="5" class="text-end fs-5">TOTAL (VND)</th><th class="text-end fs-5">@Model.TotalAmount.ToString("N0")</th></tr>
+        </tfoot>
+    </table>
+
+    <div class="row mt-5 text-center">
+        <div class="col-6"><div class="fw-semibold">Buyer</div><div class="small text-muted">(signature)</div></div>
+        <div class="col-6"><div class="fw-semibold">Seller</div><div class="small text-muted">(signature &amp; stamp)</div></div>
+    </div>
+</div>
