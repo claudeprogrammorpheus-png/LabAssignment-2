@@ -1,0 +1,95 @@
+@model List<Item>
+@{ ViewData["Title"] = "Catalog"; }
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h1 class="h3 fw-bold mb-0"><i class="bi bi-grid-3x3-gap me-2 text-primary"></i>Product catalog</h1>
+        <span class="text-muted">Enter quantities (cartons) for one or more items, then place a single order.</span>
+    </div>
+    <form method="get" class="d-flex gap-2">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input name="q" value="@ViewBag.Q" class="form-control" placeholder="Search item or size" />
+        </div>
+        <select name="stock" class="form-select" style="width:auto">
+            <option value="">All items</option>
+            <option value="in" selected="@(ViewBag.Stock == "in")">In stock only</option>
+        </select>
+        <button class="btn btn-outline-primary">Filter</button>
+    </form>
+</div>
+
+<form asp-action="PlaceOrder" method="post" id="orderForm">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr><th>#</th><th>Item</th><th>Pack size</th><th class="text-end">Unit price (VND)</th><th class="text-center">In stock</th><th class="text-center">Quantity</th></tr>
+                        </thead>
+                        <tbody>
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            var it = Model[i];
+                            var badge = it.StockQuantity == 0 ? "bg-secondary" : it.StockQuantity <= 10 ? "bg-danger" : it.StockQuantity <= 50 ? "bg-warning text-dark" : "bg-success";
+                            <tr>
+                                <td class="text-muted">@it.ItemID</td>
+                                <td class="fw-semibold">@it.ItemName</td>
+                                <td class="text-muted small">@it.Size</td>
+                                <td class="text-end">@it.Price.ToString("N0")</td>
+                                <td class="text-center"><span class="badge @badge">@(it.StockQuantity == 0 ? "Out of stock" : it.StockQuantity.ToString())</span></td>
+                                <td class="text-center">
+                                    <input type="hidden" name="lines[@i].ItemID" value="@it.ItemID" />
+                                    <input type="number" name="lines[@i].Quantity" value="0" min="0" max="@it.StockQuantity"
+                                           class="form-control form-control-sm qty-input mx-auto text-center"
+                                           data-name="@it.ItemName" data-price="@it.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-stock="@it.StockQuantity"
+                                           disabled="@(it.StockQuantity == 0)" />
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card sticky-summary">
+                <div class="card-header bg-white fw-bold"><i class="bi bi-cart3 me-1"></i>Order summary</div>
+                <ul class="list-group list-group-flush" id="summaryLines">
+                    <li class="list-group-item text-muted small">No items selected yet.</li>
+                </ul>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between fs-5 fw-bold"><span>Total</span><span id="total">0 ₫</span></div>
+                    <div class="text-danger small mt-2" id="warn"></div>
+                    <button class="btn btn-primary w-100 mt-3 py-2" id="submitBtn" disabled><i class="bi bi-bag-check me-1"></i>Place order</button>
+                    <p class="small text-muted mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>Stock is checked and reserved in a single database transaction when you place the order.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+    const fmt = n => n.toLocaleString('vi-VN') + ' ₫';
+    function refresh() {
+        let total = 0, html = '', warn = '', count = 0;
+        document.querySelectorAll('.qty-input').forEach(inp => {
+            const q = parseInt(inp.value || '0'), price = +inp.dataset.price, stock = +inp.dataset.stock;
+            inp.classList.toggle('is-invalid', q > stock || q < 0);
+            if (q > stock) warn = `Only ${stock} available for ${inp.dataset.name}.`;
+            if (q > 0) {
+                count++; total += q * price;
+                html += `<li class="list-group-item d-flex justify-content-between small"><span>${inp.dataset.name} × ${q}</span><span>${fmt(q * price)}</span></li>`;
+            }
+        });
+        document.getElementById('summaryLines').innerHTML = html || '<li class="list-group-item text-muted small">No items selected yet.</li>';
+        document.getElementById('total').textContent = fmt(total);
+        document.getElementById('warn').textContent = warn;
+        document.getElementById('submitBtn').disabled = count === 0 || warn !== '';
+    }
+    document.querySelectorAll('.qty-input').forEach(i => i.addEventListener('input', refresh));
+    refresh();
+</script>
+}
