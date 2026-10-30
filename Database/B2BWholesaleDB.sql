@@ -1,4 +1,24 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+/* =====================================================================
+   B2B Wholesale Management System - full database script
+   Creates database B2BWholesaleDB, all tables/keys/constraints and the seed data
+   (generated from the EF Core Code First migration InitialCreate).
+   Run in SSMS (F5) or:  sqlcmd -S "(localdb)\MSSQLLocalDB" -i B2BWholesaleDB.sql
+   WARNING: an existing B2BWholesaleDB database is dropped and recreated.
+   ===================================================================== */
+USE master;
+GO
+IF DB_ID(N'B2BWholesaleDB') IS NOT NULL
+BEGIN
+    ALTER DATABASE B2BWholesaleDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE B2BWholesaleDB;
+END
+GO
+CREATE DATABASE B2BWholesaleDB;
+GO
+USE B2BWholesaleDB;
+GO
+
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
